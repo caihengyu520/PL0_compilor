@@ -1,0 +1,7 @@
+var i,j;
+begin
+  i := -1;
+  j := i + 1;
+  if j>5
+    then j:=5;
+end.
