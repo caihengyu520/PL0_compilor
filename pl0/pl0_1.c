@@ -243,6 +243,10 @@ void test(symset s1, symset s2, int n)
 	}
 } // test
 
+
+
+
+
 //////////////////////////////////////////////////////////////////////
 int dx;  // data allocation index
 
@@ -250,7 +254,7 @@ int dx;  // data allocation index
 void enter(int kind)
 {
 	mask* mk;
-
+	int i;
 	tx++;
 	strcpy(table[tx].name, id);
 	table[tx].kind = kind;
@@ -274,23 +278,24 @@ void enter(int kind)
 		mk->level = level;
 		break;
 	case ID_YINGYONG:
-		mk=(mask*) &table[tx];
-		getsym()
-		if(sym!=SYM_BECOMES)
-		{
-			error(15);          //expected :=
-		}
-		getsym()
-		if(sym==SYM_IDENTIFIER)
-		{
+		mk = (mask*) &table[tx];
+		mk->level = level;
+		mk->address = dx++;
+		getsym();
+		if (sym != SYM_BECOMES)
+			error(1);
+		else{
+			getsym();
 			if(!(i=position(id)))
+			{
 				error(11);
-			mk->level=tabel[i].level;
-			mk->address=table[i].address;
+			}
+			table[tx].value=i;
 		}
-		
+		break;
 	} // switch
 } // enter
+
 
 //////////////////////////////////////////////////////////////////////
 // locates identifier in symbol table.
@@ -328,7 +333,10 @@ void constdeclaration()
 		{
 			error(3); // There must be an '=' to follow the identifier.
 		}
-	} else	error(4);
+	} else{
+		printf(" const \n");
+		error(4);
+	}
 	 // There must be an identifier to follow 'const', 'var', or 'procedure'.
 } // constdeclaration
 
@@ -340,6 +348,10 @@ void yingyongdeclaration(void)
 		enter(ID_YINGYONG);
 		getsym();
 	}
+	else{
+		printf(" yingyong \n");
+		error(4);
+	}
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -350,9 +362,9 @@ void vardeclaration(void)
 		enter(ID_VARIABLE);
 		getsym();
 	}
-	else
-	{
-		error(4); // There must be an identifier to follow 'const', 'var', or 'procedure'.
+	else{
+		printf(" vardeclaration \n");
+		error(4);
 	}
 } // vardeclaration
 
@@ -397,6 +409,10 @@ void factor(symset fsys)
 				case ID_VARIABLE:
 					mk = (mask*) &table[i];
 					gen(LOD, level - mk->level, mk->address);
+					break;
+				case ID_YINGYONG:
+					mk= (mask*) &table[table[i].value];
+					gen(LOD,level-mk->level,mk->address);
 					break;
 				case ID_PROCEDURE:
 					error(21); // Procedure identifier can not be in an expression.
@@ -662,7 +678,7 @@ void statement(symset fsys)
 		{
 			error(11); // Undeclared identifier.
 		}
-		else if (table[i].kind != ID_VARIABLE)
+		else if (table[i].kind != ID_VARIABLE && table[i].kind !=ID_YINGYONG)
 		{
 			error(12); // Illegal assignment.
 			i = 0;
@@ -672,7 +688,10 @@ void statement(symset fsys)
 		{
 			getsym();
 			expression(fsys);
-			mk = (mask*) &table[i];
+			if(table[i].kind==ID_VARIABLE)
+				mk = (mask*) &table[i];
+			else if(table[i].kind==ID_YINGYONG)
+				mk = (mask*) &table[table[i].value];
 			if (i)
 			{
 				gen(STO, level - mk->level, mk->address);
@@ -1040,10 +1059,10 @@ void block(symset fsys)
 		if(sym==SYM_YINGYONG)
 		{//yingyong declarations
 			getsym();
-			do
+			yingyongdeclaration();
+			if(sym==SYM_SEMICOLON)
 			{
-				yingyongdeclaration();
-				
+				getsym();
 			}
 		}
 
@@ -1078,9 +1097,9 @@ void block(symset fsys)
 				enter(ID_PROCEDURE);
 				getsym();
 			}
-			else
-			{
-				error(4); // There must be an identifier to follow 'const', 'var', or 'procedure'.
+			else{
+				printf(" procedure \n");
+				error(4);
 			}
 
 
@@ -1118,7 +1137,7 @@ void block(symset fsys)
 			}
 		} // while
 		dx = block_dx; //restore dx after handling procedure call!
-		set1 = createset(SYM_IDENTIFIER, SYM_CONST,SYM_NULL);
+		set1 = createset(SYM_IDENTIFIER,SYM_YINGYONG, SYM_CONST,SYM_NULL);
 		set = uniteset(statbegsys, set1);
 		test(set, declbegsys, 7);
 		destroyset(set1);
@@ -1146,7 +1165,9 @@ int base(int stack[], int currentLevel, int levelDiff)
 	int b = currentLevel;
 	
 	while (levelDiff--)
+	{
 		b = stack[b];
+	}
 	return b;
 } // base
 

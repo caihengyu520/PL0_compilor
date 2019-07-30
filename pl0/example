@@ -1,5 +1,6 @@
 const a=10;
 var i,j,z;
+^x:=i;
 const b=10;
 var m;
 begin
@@ -15,11 +16,14 @@ begin
     i+=3;
     write();
     write(j,a);
-    j:=3;
-    j-=1;
-    j+=3;
+    j:=x;
+    j:=i;
+    x:=10;
+    j:=x+10;
     j:=j+3;
     read(j);
+    read(i);
+    z:=x;
     if j>5 then
         j:=5;
     else exit;

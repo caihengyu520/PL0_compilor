@@ -41,7 +41,7 @@ enum symtype
 	SYM_ME,
 	SYM_AA,
 	SYM_MM,
-    SYM_BEGIN,
+    	SYM_BEGIN,
 	SYM_END,
 	SYM_IF,
 	SYM_THEN,
@@ -58,7 +58,7 @@ enum symtype
 
 enum idtype
 {
-	ID_CONSTANT, ID_VARIABLE, ID_PROCEDURE,ID_YINYONG
+	ID_CONSTANT, ID_VARIABLE, ID_PROCEDURE,ID_YINGYONG
 };
 
 enum opcode
